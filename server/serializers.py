@@ -13,14 +13,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = User 
         fields = ['id', 'email', 'password']
 
-
     def validate_password(self, value):
-        # Use Django's built-in password validators
         try:
             validate_password(value)
         except ValidationError as e:
-            # Customize the error message here
-            raise serializers.ValidationError({
-                'password': ' '.join(e.messages)  # Combines all error messages into a single string
-            })
-        return value
+            for msg in e.messages:
+                if "too short" in msg:
+                    raise serializers.ValidationError("PASSWORD_TOO_SHORT")
+                elif "too common" in msg:
+                    raise serializers.ValidationError("PASSWORD_TOO_COMMON")
+                elif "entirely numeric" in msg:
+                    raise serializers.ValidationError("PASSWORD_ONLY_NUMBERS")
+                else:
+                    raise serializers.ValidationError('UNKNOWN_ERROR')
+            return value
