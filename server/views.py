@@ -16,7 +16,7 @@ from .serializers import UserSerializer
 def login(request):
     user = get_object_or_404(User, email=request.data['email'])
     if not user.check_password(request.data['password']):
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "INVALID_CREDENTIALS"}, status=status.HTTP_404_NOT_FOUND)
     token, created = Token.objects.get_or_create(user=user)
     serializer = UserSerializer(instance=user)
     return Response({'token': token.key, 'user': serializer.data})
@@ -33,10 +33,10 @@ def signup(request):
                 password=request.data['password']
             )
             user.save()
-            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'USER_CREATED_SUCCESSFULLY'}, status=status.HTTP_201_CREATED)
         except IntegrityError:
-            return Response ({'message': 'User already registered'}, status=status.HTTP_409_CONFLICT)
-    return Response({'message': 'Invalid data', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response ({'message': 'USER_ALREADY_REGISTERD'}, status=status.HTTP_409_CONFLICT)
+    return Response({'errors': serializer.errors}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 @api_view(['GET'])
